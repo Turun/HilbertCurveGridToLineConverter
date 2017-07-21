@@ -37,18 +37,18 @@ public class HilbertCurveConverter
      *  
      *--------------
      */
-    public static byte[] mapGridToLine(byte[][] in){
+    public static Object[] mapGridToLine(Object[][] in){
         //input is null
         if(in == null){return null;}
         
-        //inputarray x dimension is not power of two (neccessary for hilbert curve)
+        //input array x dimension is not power of two (neccessary for hilbert curve)
         if(!isPowOfTwo(in.length)){return null;}
         
         //nested length is power of two and all nested arrays are of equal lenght
         int nestedLength = in[0].length;
         if(!isPowOfTwo(nestedLength)){return null;}
-        for(byte[] b : in){
-            if(b.length != nestedLength){return null;}
+        for(Object[] obj : in){
+            if(obj.length != nestedLength){return null;}
         }
         
         
@@ -59,13 +59,13 @@ public class HilbertCurveConverter
     /**
      * method to recursively map the (valid) input grid to a line 
      */
-    public static byte[] mapToLine(byte[][] in){ 
+    public static Object[] mapToLine(Object[][] in){ 
         //couldn't get it to work with recursion below 2x2 level, so it's hardcoded.
-        if(in.length == 2){return new byte[] {in[1][0], in[0][0], in[0][1], in[1][1]};}
+        if(in.length == 2){return new Object[] {in[1][0], in[0][0], in[0][1], in[1][1]};}
         
         //this should never happen, because in.length == 2 is true before this is reached by recursion. 
         //Only way would be to feed a 1x1 2d array. If this happens, return the only byte that is in this array, one byte is already sorted  
-        if(in.length == 1){return new byte[] {in[0][0]};}
+        if(in.length == 1){return new Object[] {in[0][0]};}
         
         //just some constants to make it easier to read the loops
         final int len = in.length;
@@ -75,28 +75,28 @@ public class HilbertCurveConverter
         //the sorted/line forms are stored in byte[], topLeft, topRight, bottomLeft and bottomRight
         
         //create an array 1/4 the size and copy the corresponding data in it.
-        byte[][] tl = new byte[hLen][hLen];
+        Object[][] tl = new Object[hLen][hLen];
         for(int y = 0; y < hLen; y++){
             for(int x = 0; x < hLen; x++){
                 tl[y][x] = in[y][x];
             }
         }
         //get that array in line form
-        byte[] tlSol = mapToLine(tl);
+        Object[] tlSol = mapToLine(tl);
         
         
         //simple copie for top right
-        byte[][] tr = new byte[hLen][hLen];
+        Object[][] tr = new Object[hLen][hLen];
         for(int y = 0; y < hLen; y++){
             for(int x = 0; x < hLen; x++){
                 tr[y][x] = in[y][x+hLen];
             }
         }
-        byte[] trSol = mapToLine(tr);
+        Object[] trSol = mapToLine(tr);
         
         
         //simple copie for bottom left
-        byte[][] bl = new byte[hLen][hLen];
+        Object[][] bl = new Object[hLen][hLen];
         for(int y = 0; y<hLen; y++){
             for(int x = 0; x<hLen; x++){
                 bl[y][x]= in[y+hLen][x];
@@ -104,11 +104,11 @@ public class HilbertCurveConverter
         }
         //This part has to be rotated around its bottom-left to top-right axis
         flipAroundAxisBottomLeftToTopRight(bl);
-        byte[] blSol = mapToLine(bl);
+        Object[] blSol = mapToLine(bl);
         
         
         //simple copie for bottom right
-        byte[][] br = new byte[hLen][hLen];
+        Object[][] br = new Object[hLen][hLen];
         for(int y = 0; y<hLen; y++){
             for(int x = 0; x<hLen; x++){
                 br[y][x] = in[y+hLen][x+hLen];
@@ -116,12 +116,12 @@ public class HilbertCurveConverter
         }
         //This part has to be rotated around its top-left to bottom-right axis
         flipAroundAxisTopLeftToBottomRight(br);
-        byte[] brSol = mapToLine(br);
+        Object[] brSol = mapToLine(br);
         
         
         //the line forms now have to be merged into one big array 
         
-        byte[] re = new byte[len*len]; //the array that will be returned
+        Object[] re = new Object[len*len]; //the array that will be returned
         int p = 0; //pointer
         final int part = re.length>>2; //one fourth of the length of the return array. easier reading
         for(; p<part; p++){
@@ -169,7 +169,7 @@ public class HilbertCurveConverter
      *  
      *--------------
      */
-    public static byte[][] mapLineToGrid(byte[] in){
+    public static Object[][] mapLineToGrid(Object[] in){
         if(in == null){return null;}
         if(!isPowOfFour(in.length)){return null;}
 
@@ -179,44 +179,44 @@ public class HilbertCurveConverter
     /**
      * method to (recursively) map the line to a grid
      */
-    public static byte[][] mapToGrid(byte[] in){
+    public static Object[][] mapToGrid(Object[] in){
         //if line length is four, just return the right values. 
-        if(in.length == 4){return new byte[][] {{in[1], in[2]}, {in[0], in[3]}};}
+        if(in.length == 4){return new Object[][] {{in[1], in[2]}, {in[0], in[3]}};}
         //should not happen, but just in case, if you have a single value, put it in a grid and return it.
-        if(in.length == 1){return new byte[][] {{in[0]}};}
+        if(in.length == 1){return new Object[][] {{in[0]}};}
         
         //variables
         final int len = in.length>>2; //easier to read for-loops
         int p = 0; //pointer for in-array
         
-        //copie the first fourth of the input to a new array and let it recursively fix itself.
-        byte[] bl = new byte[len];
+        //copie the first fourth of the input (bottom left) to a new array and let it recursively fix itself.
+        Object[] bl = new Object[len];
         for(; p<len; p++){
             bl[p] = in[p];
         }
         //map the line to a grid (recursively). 
-        byte[][] blSol = mapToGrid(bl);
+        Object[][] blSol = mapToGrid(bl);
         
-        //do the same with the second fourth
-        byte[] tl = new byte[len];
+        //do the same with the second fourth (top left)
+        Object[] tl = new Object[len];
         for(; p<len*2; p++){
             tl[p-len] = in[p];
         }
-        byte[][] tlSol = mapToGrid(tl);
+        Object[][] tlSol = mapToGrid(tl);
         
-        //do the same with the third fourth
-        byte[] tr = new byte[len];
+        //do the same with the third fourth (top right)
+        Object[] tr = new Object[len];
         for(;p<len*3; p++){
             tr[p-(len*2)] = in[p];
         }
-        byte[][] trSol = mapToGrid(tr);
+        Object[][] trSol = mapToGrid(tr);
         
-        //do the same with the last fourth
-        byte[] br = new byte[len];
+        //do the same with the last fourth (bottom right)
+        Object[] br = new Object[len];
         for(;p<len*4; p++){
             br[p-(len*3)] = in[p];
         }
-        byte[][] brSol = mapToGrid(br);
+        Object[][] brSol = mapToGrid(br);
         
         //the two grids on the bottom have to be flipped to form a hilbert curve.
         flipAroundAxisBottomLeftToTopRight(blSol);
@@ -227,7 +227,7 @@ public class HilbertCurveConverter
         final int half = size>>1;
         
         //put the four smaller arrays in a big one to return it.
-        byte[][] re = new byte[size][size];
+        Object[][] re = new Object[size][size];
         for(int y = 0; y<half; y++){
             for(int x = 0; x<half; x++){
                 re[y][x] = tlSol[y][x];
@@ -249,10 +249,10 @@ public class HilbertCurveConverter
     /**
      * flips the given byte[][] around the top-left to bottom-right axis. e.g the value at [1][0] gets mapped to [0][1]
      */
-    public static void flipAroundAxisTopLeftToBottomRight(byte[][] in){
+    public static void flipAroundAxisTopLeftToBottomRight(Object[][] in){
         for(int y = 0; y<in.length; y++){
             for(int x = y+1; x<in[y].length; x++){
-                byte temp = in[y][x];
+                Object temp = in[y][x];
                 in[y][x] = in[x][y];
                 in[x][y] = temp;
             }
@@ -262,10 +262,10 @@ public class HilbertCurveConverter
     /**
      * flips the given byte[][] around the bottom-left to top-right axis. e.g the value at [0][0] gets mapped to [-1][-1]
      */
-    public static void flipAroundAxisBottomLeftToTopRight(byte[][] in){
+    public static void flipAroundAxisBottomLeftToTopRight(Object[][] in){
         for(int y = 0; y<in.length; y++){
             for(int x = 0; x<in.length-y-1; x++){
-                byte temp = in[y][x];
+                Object temp = in[y][x];
                 in[y][x] = in[in.length-1-x][in.length-1-y];
                 in[in.length-1-x][in.length-1-y] = temp;
             }
@@ -316,14 +316,14 @@ public class HilbertCurveConverter
      * for testing the Methods (prints on Console)
      */
     public static void test(){
-        byte[] oneDimensional = {
+        Byte[] oneDimensional = {
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 
             'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
             'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-'};
         
             
-        byte[][] twoDimensional = {
+        Byte[][] twoDimensional = {
             {'v', 'w', 'z', 'A', 'L', 'M', 'P', 'Q'},
             {'u', 'x', 'y', 'B', 'K', 'N', 'O', 'R'},
             {'t', 's', 'D', 'C', 'J', 'I', 'T', 'S'},
@@ -333,12 +333,12 @@ public class HilbertCurveConverter
             {'b', 'c', 'h', 'g', '5', '4', '9', '+'},
             {'a', 'd', 'e', 'f', '6', '7', '8', '-'},};
         
-        for(byte b : mapGridToLine(mapLineToGrid(oneDimensional))){
-            System.out.println((char)b);
+        for(Object b : mapGridToLine(mapLineToGrid((Object[])oneDimensional))){
+            System.out.println((char)(byte)b);
         }
         System.out.println("\n");
-        for(byte b : mapGridToLine(twoDimensional)){
-            System.out.println((char)b);
+        for(Object b : mapGridToLine((Object[][])twoDimensional)){
+            System.out.println((char)(byte)b);
         }
     }
     
